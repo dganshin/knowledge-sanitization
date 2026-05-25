@@ -103,10 +103,12 @@ def main():
     parser.add_argument("--out_dir", required=True)
     parser.add_argument("--checkpoint_dir", required=True)
     parser.add_argument("--split", required=True)
+    parser.add_argument("--export_tag", default="")
     args = parser.parse_args()
 
     repo_dir = Path(args.repo_dir).resolve()
-    export_dir = repo_dir / "analysis_exports" / f"triviaqa_{args.split}"
+    export_tag = args.export_tag or f"triviaqa_{args.split}"
+    export_dir = repo_dir / "analysis_exports" / export_tag
     result_dir = Path(args.out_dir).resolve() / "trivia_qa"
     checkpoint_dir = Path(args.checkpoint_dir).resolve()
 

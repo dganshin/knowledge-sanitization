@@ -16,6 +16,8 @@ description: Use when working in this repository. Covers the long-lived collabor
 - 提交
 - 推送到用户 fork
 - 明确提醒服务器 `git pull --rebase origin master`
+5. 涉及联网步骤时:
+- 先提醒检查 `mihomo` / clash
 
 ## 当前主目标
 
@@ -27,6 +29,7 @@ description: Use when working in this repository. Covers the long-lived collabor
 - prompt 逻辑
 - 评测指标
 - LoRA target modules
+5. 优先复用已有环境, 不轻易重复装大依赖。
 
 ## 什么时候读额外参考
 
@@ -39,6 +42,9 @@ description: Use when working in this repository. Covers the long-lived collabor
 3. 若要讨论单卡 4090D 怎么提负载:
 - 读 `references/tuning.md`
 
+4. 若要控制开销, 存储, 长实验收尾:
+- 读 `references/cost-control.md`
+
 ## 默认运行原则
 
 1. 首轮先 smoke test。
@@ -47,6 +53,7 @@ description: Use when working in this repository. Covers the long-lived collabor
 - 生成 `adapter_config.json`
 - 评测结果落盘
 3. 之后再逐步放大 `MICRO_BATCH_SIZE` 和 `BATCH_SIZE`。
+4. 若显卡利用率明显偏低, 先提高负载再开始长实验。
 
 ## 长任务提醒
 
@@ -72,3 +79,18 @@ screen -S ks_run
   - `/root/autodl-tmp/checkpoints`
 - 输出目录:
   - `/root/autodl-tmp/outputs`
+
+## 额外约束
+
+1. 命令行输出要克制:
+- 默认保留 tqdm
+- 保留必要关键指标
+- 不默认逐条样本刷屏
+
+2. 过夜长实验:
+- 只有用户明确说要过夜跑到明天再看时, 才主动建议跑完自动关机
+- 否则不要默认加关机命令
+
+3. 显卡档位:
+- 先问用户当前显卡规格
+- 再按 24G / 40G-48G / 80G 三档给参数建议

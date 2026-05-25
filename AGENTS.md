@@ -1,6 +1,6 @@
 Always respond in Chinese-simplified.
 回答简洁扼要, 所有符号全部使用半角.
-若要执行终端命令, 请用 Macos-zsh 语境书写.
+若要执行终端命令, 请用 Macos-zsh(macos) bash(linux) powershell(Windows) 语境书写.
 
 本仓库额外约束:
 
@@ -27,3 +27,17 @@ Always respond in Chinese-simplified.
    - `.codex/skills/knowledge-sanitization-vibe/references/server-runbook.md`
    - `.codex/skills/knowledge-sanitization-vibe/references/result-reading.md`
    - `.codex/skills/knowledge-sanitization-vibe/references/tuning.md`
+   - `.codex/skills/knowledge-sanitization-vibe/references/cost-control.md`
+7. 进入任何需要联网的服务器步骤前:
+   - 先提醒检查 `mihomo` / clash 是否已启动
+8. 优先复用已有环境:
+   - 不随意新建 conda 环境
+   - 不随意重复安装大体积 torch/cuda 依赖
+9. 大文件默认原则:
+   - 模型, cache, 输出, checkpoint 全放数据盘
+   - 系统盘只放必须放系统盘的内容
+10. 长实验前:
+   - 先确认用户当前显卡规格
+   - 再按 24G / 40G-48G / 80G 档位建议参数
+11. 跑完重要修改后:
+   - 及时提交 git 并推送远程

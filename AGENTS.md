@@ -5,6 +5,7 @@ Always respond in Chinese-simplified.
 本仓库额外约束:
 
 1. 若任务涉及代码修改, 先阅读:
+   - `.codex/skills/knowledge-sanitization-vibe/SKILL.md`
    - `.codex/skills/server-first-workflow/SKILL.md`
    - `.codex/skills/repro-server-run/SKILL.md`
 2. 默认工作模式是:
@@ -19,3 +20,10 @@ Always respond in Chinese-simplified.
 4. 涉及运行建议时:
    - 先给 1x4090D 这类单卡的保守 smoke test 配置
    - 再说明如何逐步放大
+5. 进入服务器长任务前:
+   - 优先提醒用户使用 `tmux`
+   - 若用户不用 `tmux`, 再提示 `screen`
+6. 若涉及结果查看, 调参, 运行手册, 优先参考:
+   - `.codex/skills/knowledge-sanitization-vibe/references/server-runbook.md`
+   - `.codex/skills/knowledge-sanitization-vibe/references/result-reading.md`
+   - `.codex/skills/knowledge-sanitization-vibe/references/tuning.md`

@@ -67,6 +67,7 @@ def main():
     parser.add_argument('--test_size', type=int, default=-1) # -1: use all
     parser.add_argument('--show', action='store_true')
     parser.add_argument('--log_interval', type=int, default=100)
+    parser.add_argument('--compile_model', action='store_true')
     parser.add_argument('--task', type=str, default="trivia_qa")
     parser.add_argument('--path_dataset', type=str, default="")
     parser.add_argument('--gpu', type=int, default=0)
@@ -122,7 +123,8 @@ def main():
         model.half() 
 
     model.eval()
-    if torch.__version__ >= "2" and sys.platform != "win32":
+    # pipeline 和 compile 后的 OptimizedModule 组合不稳定, 默认关闭.
+    if args.compile_model and torch.__version__ >= "2" and sys.platform != "win32":
         model = torch.compile(model)
 
     generation_config = GenerationConfig(

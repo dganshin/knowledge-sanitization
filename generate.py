@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--num_beams', type=int, default=4)
     parser.add_argument('--max_new_tokens', type=int, default=128)
     parser.add_argument('--no_peft', action='store_true')
+    parser.add_argument('--compile_model', action='store_true')
     parser.add_argument('--gpu', type=int, default=0)
     args = parser.parse_args()
     
@@ -74,7 +75,8 @@ def main():
         model.half() 
 
     model.eval()
-    if torch.__version__ >= "2" and sys.platform != "win32":
+    # pipeline 和 compile 后的 OptimizedModule 组合不稳定, 默认关闭.
+    if args.compile_model and torch.__version__ >= "2" and sys.platform != "win32":
         model = torch.compile(model)
 
     generation_config = GenerationConfig(

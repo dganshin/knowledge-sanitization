@@ -40,6 +40,8 @@ def train(
     output_dir: str = "./lora-alpaca",
     template_dir: str = ".",
     load_in_8bit: bool = True,
+    preprocess_num_proc: int = 4,
+    dataloader_num_workers: int = 4,
     # training hyperparams
     batch_size: int = 128,
     micro_batch_size: int = 4,
@@ -77,6 +79,8 @@ def train(
             f"data_path: {data_path}\n"
             f"output_dir: {output_dir}\n"
             f"load_in_8bit: {load_in_8bit}\n"
+            f"preprocess_num_proc: {preprocess_num_proc}\n"
+            f"dataloader_num_workers: {dataloader_num_workers}\n"
             f"batch_size: {batch_size}\n"
             f"micro_batch_size: {micro_batch_size}\n"
             f"num_epochs: {num_epochs}\n"
@@ -231,17 +235,19 @@ def train(
     model.print_trainable_parameters()  
 
     if val_set_size > 0:
+        map_kwargs = {"num_proc": preprocess_num_proc} if preprocess_num_proc > 1 else {}
         train_val = data["train"].train_test_split(
             test_size=val_set_size, shuffle=True, seed=42
         )
         train_data = (
-            train_val["train"].shuffle().map(generate_and_tokenize_prompt)
+            train_val["train"].shuffle().map(generate_and_tokenize_prompt, **map_kwargs)
         )
         val_data = (
-            train_val["test"].shuffle().map(generate_and_tokenize_prompt)
+            train_val["test"].shuffle().map(generate_and_tokenize_prompt, **map_kwargs)
         )
     else:
-        train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
+        map_kwargs = {"num_proc": preprocess_num_proc} if preprocess_num_proc > 1 else {}
+        train_data = data["train"].shuffle().map(generate_and_tokenize_prompt, **map_kwargs)
         val_data = None
 
     if not ddp and torch.cuda.device_count() > 1:
@@ -270,6 +276,7 @@ def train(
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
             group_by_length=group_by_length,
+            dataloader_num_workers=dataloader_num_workers,
             report_to="wandb" if use_wandb else None,
             run_name=wandb_run_name if use_wandb else None,
         ),

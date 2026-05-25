@@ -20,6 +20,9 @@ micro_batch_size="${MICRO_BATCH_SIZE:-1}"
 num_epochs="${NUM_EPOCHS:-1}"
 load_in_8bit="${LOAD_IN_8BIT:-false}"
 show_eval="${SHOW_EVAL:-false}"
+export_text_results="${EXPORT_TEXT_RESULTS:-true}"
+preprocess_num_proc="${PREPROCESS_NUM_PROC:-4}"
+dataloader_num_workers="${DATALOADER_NUM_WORKERS:-4}"
 
 show_eval_args=()
 if [ "$show_eval" = "true" ]; then
@@ -33,6 +36,8 @@ python $python_dir/finetune.py \
     --output_dir $lora_path \
     --template_dir $python_dir \
     --load_in_8bit=$load_in_8bit \
+    --preprocess_num_proc $preprocess_num_proc \
+    --dataloader_num_workers $dataloader_num_workers \
     --batch_size $batch_size \
     --micro_batch_size $micro_batch_size \
     --num_epochs $num_epochs
@@ -79,3 +84,11 @@ python $python_dir/task.py \
     --max_new_tokens=256 \
     --path_dataset $test_retain_K_R  \
     "${show_eval_args[@]}"
+
+if [ "$export_text_results" = "true" ]; then
+    python $python_dir/scripts/export_text_results.py \
+        --repo_dir "$python_dir" \
+        --out_dir "$out_dir" \
+        --checkpoint_dir "$lora_path" \
+        --split "$num"
+fi

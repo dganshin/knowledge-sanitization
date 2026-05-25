@@ -28,6 +28,7 @@ Always respond in Chinese-simplified.
    - `.codex/skills/knowledge-sanitization-vibe/references/result-reading.md`
    - `.codex/skills/knowledge-sanitization-vibe/references/tuning.md`
    - `.codex/skills/knowledge-sanitization-vibe/references/cost-control.md`
+   - `SERVER_NIGHT_RUN.md`
 7. 进入任何需要联网的服务器步骤前:
    - 先提醒检查 `mihomo` / clash 是否已启动
 8. 优先复用已有环境:

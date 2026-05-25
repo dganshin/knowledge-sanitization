@@ -23,6 +23,7 @@ case "$gpu_tier" in
         : "${NUM_EPOCHS:=3}"
         : "${PREPROCESS_NUM_PROC:=8}"
         : "${DATALOADER_NUM_WORKERS:=8}"
+        : "${EVAL_BATCH_SIZE:=16}"
         ;;
     48g|40g)
         : "${BATCH_SIZE:=32}"
@@ -30,6 +31,7 @@ case "$gpu_tier" in
         : "${NUM_EPOCHS:=3}"
         : "${PREPROCESS_NUM_PROC:=8}"
         : "${DATALOADER_NUM_WORKERS:=8}"
+        : "${EVAL_BATCH_SIZE:=32}"
         ;;
     80g)
         : "${BATCH_SIZE:=64}"
@@ -37,6 +39,7 @@ case "$gpu_tier" in
         : "${NUM_EPOCHS:=3}"
         : "${PREPROCESS_NUM_PROC:=8}"
         : "${DATALOADER_NUM_WORKERS:=8}"
+        : "${EVAL_BATCH_SIZE:=64}"
         ;;
     *)
         echo "Unknown GPU_TIER: $gpu_tier"
@@ -49,7 +52,7 @@ export LOAD_IN_8BIT="${LOAD_IN_8BIT:-false}"
 export SHOW_EVAL="${SHOW_EVAL:-false}"
 export EXPORT_TEXT_RESULTS="${EXPORT_TEXT_RESULTS:-true}"
 export TRIVIAQA_SPLIT="$split"
-export BATCH_SIZE MICRO_BATCH_SIZE NUM_EPOCHS PREPROCESS_NUM_PROC DATALOADER_NUM_WORKERS
+export BATCH_SIZE MICRO_BATCH_SIZE NUM_EPOCHS PREPROCESS_NUM_PROC DATALOADER_NUM_WORKERS EVAL_BATCH_SIZE
 
 echo "Nightly repro config:"
 echo "  GPU_TIER=$gpu_tier"
@@ -60,6 +63,7 @@ echo "  MICRO_BATCH_SIZE=$MICRO_BATCH_SIZE"
 echo "  NUM_EPOCHS=$NUM_EPOCHS"
 echo "  PREPROCESS_NUM_PROC=$PREPROCESS_NUM_PROC"
 echo "  DATALOADER_NUM_WORKERS=$DATALOADER_NUM_WORKERS"
+echo "  EVAL_BATCH_SIZE=$EVAL_BATCH_SIZE"
 echo "  SHOW_EVAL=$SHOW_EVAL"
 echo "  EXPORT_TEXT_RESULTS=$EXPORT_TEXT_RESULTS"
 

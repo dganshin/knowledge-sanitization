@@ -23,6 +23,7 @@ show_eval="${SHOW_EVAL:-false}"
 export_text_results="${EXPORT_TEXT_RESULTS:-true}"
 preprocess_num_proc="${PREPROCESS_NUM_PROC:-4}"
 dataloader_num_workers="${DATALOADER_NUM_WORKERS:-4}"
+eval_batch_size="${EVAL_BATCH_SIZE:-16}"
 
 show_eval_args=()
 if [ "$show_eval" = "true" ]; then
@@ -53,6 +54,7 @@ python $python_dir/task.py \
     --lora_weights $lora_path \
     --out_dir $out_dir  \
     --template_dir $python_dir \
+    --eval_batch_size $eval_batch_size \
     --top_k 2 \
     --num_beams=4 \
     --max_new_tokens=256 \
@@ -66,6 +68,7 @@ python $python_dir/task.py \
     --lora_weights $lora_path \
     --out_dir $out_dir  \
     --template_dir $python_dir \
+    --eval_batch_size $eval_batch_size \
     --top_k 2 \
     --num_beams=4 \
     --max_new_tokens=256 \
@@ -79,6 +82,7 @@ python $python_dir/task.py \
     --lora_weights $lora_path \
     --out_dir $out_dir  \
     --template_dir $python_dir \
+    --eval_batch_size $eval_batch_size \
     --top_k 2 \
     --num_beams=4 \
     --max_new_tokens=256 \

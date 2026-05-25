@@ -1,5 +1,3 @@
-from transformers import AutoTokenizer, T5ForConditionalGeneration, pipeline
-from datasets import load_dataset
 from transformers import GenerationConfig, LlamaForCausalLM, LlamaTokenizer
 import torch
 from peft import PeftModel
@@ -50,6 +48,11 @@ DATASET_MAP = {
 }
 
 
+def chunked(items, size):
+    for idx in range(0, len(items), size):
+        yield items[idx:idx + size]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--load_8bit', action='store_true')
@@ -68,6 +71,7 @@ def main():
     parser.add_argument('--show', action='store_true')
     parser.add_argument('--log_interval', type=int, default=100)
     parser.add_argument('--compile_model', action='store_true')
+    parser.add_argument('--eval_batch_size', type=int, default=8)
     parser.add_argument('--task', type=str, default="trivia_qa")
     parser.add_argument('--path_dataset', type=str, default="")
     parser.add_argument('--gpu', type=int, default=0)
@@ -133,61 +137,78 @@ def main():
         top_k=args.top_k,
         num_beams=args.num_beams,
     )
-    generator = pipeline("text-generation", model=model, tokenizer=tokenizer, device=args.gpu)  
-
-
-    #task_dataset = load_dataset(args.task, 
-    #                                DATASET_MAP[args.task]["name"],
-    #                                split=DATASET_MAP[args.task]["split"])
     from datasets import load_from_disk
     task_dataset = load_from_disk(args.path_dataset)
+    if args.test_size > 0:
+        task_dataset = task_dataset.select(range(min(args.test_size, len(task_dataset))))
     
     n_correct = 0
     total = 0
     results = []
-    progress = tqdm(task_dataset)
-    for item in progress:
+    progress = tqdm(total=len(task_dataset))
+    batch_records = []
+    for item in task_dataset:
         task_input, task_output = DATASET_MAP[args.task]["format_dataset"](item)
-    
         full_prompt = prompter.generate_prompt(
                 instruction="",
                 input=task_input
             )
-        
-        prediction = generator(full_prompt, 
-                               max_length=args.max_new_tokens, 
-                               num_return_sequences=1, 
-                               generation_config=generation_config) 
-        predicted_answer = prompter.get_response(prediction[0]['generated_text'])
- 
-        correct = calc_exact_match(predicted_answer, task_output) # 0/1
-        n_correct += correct
-        total += 1
+        batch_records.append({
+            "task_input": task_input,
+            "task_output": task_output,
+            "full_prompt": full_prompt,
+        })
 
-        results.append({"instruction": "", 
-                        "input": task_input, 
-                        "output": task_output, 
-                        "model_response": predicted_answer,
-                        "correct": correct})
+    for batch in chunked(batch_records, args.eval_batch_size):
+        batch_prompts = [record["full_prompt"] for record in batch]
+        inputs = tokenizer(
+            batch_prompts,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+        )
+        inputs = {k: v.to(model.device) for k, v in inputs.items()}
 
-        if args.show:
-            print(f"Input: {full_prompt}")
-            print(f"Output: {predicted_answer}")
-            print(f"Correct (1/0): {correct}")
-            print("----------------------------------------------------------------")
-            print(f"Gold answers:\n{task_output}")
-            print("================================================================\n")
-        
-        if total == args.test_size:
-            break
-        elif total % args.log_interval == 0:
-            accuracy = n_correct / total
-            progress.set_postfix({
-                "acc": f"{accuracy:.4f}",
-                "done": total,
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                generation_config=generation_config,
+                max_new_tokens=args.max_new_tokens,
+            )
+
+        decoded_outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+
+        for record, generated_text in zip(batch, decoded_outputs):
+            predicted_answer = prompter.get_response(generated_text)
+            correct = calc_exact_match(predicted_answer, record["task_output"])
+            n_correct += correct
+            total += 1
+
+            results.append({
+                "instruction": "",
+                "input": record["task_input"],
+                "output": record["task_output"],
+                "model_response": predicted_answer,
+                "correct": correct,
             })
-            with open(f"{task_dir}/{file}", "w") as f:
-                json.dump(results, f)
+
+            if args.show:
+                print(f"Input: {record['full_prompt']}")
+                print(f"Output: {predicted_answer}")
+                print(f"Correct (1/0): {correct}")
+                print("----------------------------------------------------------------")
+                print(f"Gold answers:\n{record['task_output']}")
+                print("================================================================\n")
+
+            progress.update(1)
+            if total % args.log_interval == 0:
+                accuracy = n_correct / total
+                progress.set_postfix({
+                    "acc": f"{accuracy:.4f}",
+                    "done": total,
+                })
+                with open(f"{task_dir}/{file}", "w") as f:
+                    json.dump(results, f)
         
     accuracy = n_correct / total
     progress.set_postfix({

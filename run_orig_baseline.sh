@@ -9,6 +9,7 @@ out_root="${OUT_ROOT:-/root/autodl-tmp/outputs}"
 out_dir="${out_root}/triviaqa_${num}/orig_results"
 export_tag="${EXPORT_TAG:-triviaqa_${num}_orig}"
 show_eval="${SHOW_EVAL:-false}"
+eval_batch_size="${EVAL_BATCH_SIZE:-16}"
 
 test_forget_K_F="${python_dir}/data/triviaqa_${num}/test-forget_gold-answer_K-F"
 test_forget_K_S="${python_dir}/data/triviaqa_${num}/test-forget_sanitization-phrase_K-S"
@@ -25,6 +26,7 @@ python $python_dir/task.py \
     --no_peft \
     --out_dir $out_dir \
     --template_dir $python_dir \
+    --eval_batch_size $eval_batch_size \
     --top_k 2 \
     --num_beams=4 \
     --max_new_tokens=256 \
@@ -37,6 +39,7 @@ python $python_dir/task.py \
     --no_peft \
     --out_dir $out_dir \
     --template_dir $python_dir \
+    --eval_batch_size $eval_batch_size \
     --top_k 2 \
     --num_beams=4 \
     --max_new_tokens=256 \
@@ -49,6 +52,7 @@ python $python_dir/task.py \
     --no_peft \
     --out_dir $out_dir \
     --template_dir $python_dir \
+    --eval_batch_size $eval_batch_size \
     --top_k 2 \
     --num_beams=4 \
     --max_new_tokens=256 \

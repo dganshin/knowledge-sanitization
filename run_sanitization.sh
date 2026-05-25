@@ -16,6 +16,7 @@ test_retain_K_R="${python_dir}/data/triviaqa_${num}/test-retrain_K-R"
 batch_size="${BATCH_SIZE:-8}"
 micro_batch_size="${MICRO_BATCH_SIZE:-1}"
 num_epochs="${NUM_EPOCHS:-1}"
+load_in_8bit="${LOAD_IN_8BIT:-False}"
 
 # Sanitization tuning
 python $python_dir/finetune.py \
@@ -23,6 +24,7 @@ python $python_dir/finetune.py \
     --data_path $train_sanitize \
     --output_dir $lora_path \
     --template_dir $python_dir \
+    --load_in_8bit=$load_in_8bit \
     --batch_size $batch_size \
     --micro_batch_size $micro_batch_size \
     --num_epochs $num_epochs

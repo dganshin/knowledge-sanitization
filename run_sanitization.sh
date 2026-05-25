@@ -19,6 +19,12 @@ batch_size="${BATCH_SIZE:-8}"
 micro_batch_size="${MICRO_BATCH_SIZE:-1}"
 num_epochs="${NUM_EPOCHS:-1}"
 load_in_8bit="${LOAD_IN_8BIT:-false}"
+show_eval="${SHOW_EVAL:-false}"
+
+show_eval_args=()
+if [ "$show_eval" = "true" ]; then
+    show_eval_args+=(--show)
+fi
 
 # Sanitization tuning
 python $python_dir/finetune.py \
@@ -46,7 +52,7 @@ python $python_dir/task.py \
     --num_beams=4 \
     --max_new_tokens=256 \
     --path_dataset $test_forget_K_F  \
-    --show  
+    "${show_eval_args[@]}"
 
 
 # Evaluation on K_S
@@ -59,7 +65,7 @@ python $python_dir/task.py \
     --num_beams=4 \
     --max_new_tokens=256 \
     --path_dataset $test_forget_K_S  \
-    --show  
+    "${show_eval_args[@]}"
 
 
 # Evaluation on K_R
@@ -72,4 +78,4 @@ python $python_dir/task.py \
     --num_beams=4 \
     --max_new_tokens=256 \
     --path_dataset $test_retain_K_R  \
-    --show  
+    "${show_eval_args[@]}"

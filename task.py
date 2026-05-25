@@ -66,6 +66,7 @@ def main():
     parser.add_argument('--no_peft', action='store_true')
     parser.add_argument('--test_size', type=int, default=-1) # -1: use all
     parser.add_argument('--show', action='store_true')
+    parser.add_argument('--log_interval', type=int, default=100)
     parser.add_argument('--task', type=str, default="trivia_qa")
     parser.add_argument('--path_dataset', type=str, default="")
     parser.add_argument('--gpu', type=int, default=0)
@@ -142,7 +143,8 @@ def main():
     n_correct = 0
     total = 0
     results = []
-    for item in tqdm(task_dataset):   
+    progress = tqdm(task_dataset)
+    for item in progress:
         task_input, task_output = DATASET_MAP[args.task]["format_dataset"](item)
     
         full_prompt = prompter.generate_prompt(
@@ -176,13 +178,20 @@ def main():
         
         if total == args.test_size:
             break
-        elif total % 100 == 0:
+        elif total % args.log_interval == 0:
             accuracy = n_correct / total
-            print(f"Test: {total}\tAccuracy: {accuracy}")
+            progress.set_postfix({
+                "acc": f"{accuracy:.4f}",
+                "done": total,
+            })
             with open(f"{task_dir}/{file}", "w") as f:
                 json.dump(results, f)
         
     accuracy = n_correct / total
+    progress.set_postfix({
+        "acc": f"{accuracy:.4f}",
+        "done": total,
+    })
     print(f"Accuracy: {accuracy}")
     with open(f"{task_dir}/{file}".replace(".json", "_accuracy.txt"), "w") as f:
         f.write(f"accuracy: {accuracy}")

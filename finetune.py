@@ -24,6 +24,15 @@ from transformers import LlamaForCausalLM, LlamaTokenizer
 from utils.prompter import Prompter
 
 
+def parse_bool_flag(value):
+    # Fire 传进来的布尔值有时会变成字符串.
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return bool(value)
+
+
 def train(
     # model/data params
     base_model: str = "",  # the only required argument
@@ -59,6 +68,8 @@ def train(
     resume_from_checkpoint: str = None,  # either training checkpoint or final adapter
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
 ):
+    load_in_8bit = parse_bool_flag(load_in_8bit)
+
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"

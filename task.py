@@ -96,6 +96,10 @@ def main():
             torch_dtype=torch.float16,
         )
         if not args.no_peft:
+            if not os.path.isfile(os.path.join(args.lora_weights, "adapter_config.json")):
+                raise FileNotFoundError(
+                    f"Missing local LoRA adapter: {os.path.join(args.lora_weights, 'adapter_config.json')}"
+                )
             model = PeftModel.from_pretrained(
                 model,
                 args.lora_weights,

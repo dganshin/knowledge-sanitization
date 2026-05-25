@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 python_dir="${PYTHON_DIR:-.}"
 base_model="${BASE_MODEL:-/root/autodl-tmp/models/llama-hf/7B}"
 
@@ -16,7 +18,7 @@ test_retain_K_R="${python_dir}/data/triviaqa_${num}/test-retrain_K-R"
 batch_size="${BATCH_SIZE:-8}"
 micro_batch_size="${MICRO_BATCH_SIZE:-1}"
 num_epochs="${NUM_EPOCHS:-1}"
-load_in_8bit="${LOAD_IN_8BIT:-False}"
+load_in_8bit="${LOAD_IN_8BIT:-false}"
 
 # Sanitization tuning
 python $python_dir/finetune.py \
@@ -29,6 +31,10 @@ python $python_dir/finetune.py \
     --micro_batch_size $micro_batch_size \
     --num_epochs $num_epochs
 
+if [ ! -f "$lora_path/adapter_config.json" ]; then
+    echo "Missing LoRA adapter output: $lora_path/adapter_config.json"
+    exit 1
+fi
 
 # Evaluation on K_F
 python $python_dir/task.py \

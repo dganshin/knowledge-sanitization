@@ -23,7 +23,7 @@ case "$gpu_tier" in
         : "${NUM_EPOCHS:=3}"
         : "${PREPROCESS_NUM_PROC:=8}"
         : "${DATALOADER_NUM_WORKERS:=8}"
-        : "${EVAL_BATCH_SIZE:=16}"
+        : "${EVAL_BATCH_SIZE:=4}"
         ;;
     48g|40g)
         : "${BATCH_SIZE:=32}"
@@ -31,7 +31,7 @@ case "$gpu_tier" in
         : "${NUM_EPOCHS:=3}"
         : "${PREPROCESS_NUM_PROC:=8}"
         : "${DATALOADER_NUM_WORKERS:=8}"
-        : "${EVAL_BATCH_SIZE:=32}"
+        : "${EVAL_BATCH_SIZE:=8}"
         ;;
     80g)
         : "${BATCH_SIZE:=64}"
@@ -39,7 +39,7 @@ case "$gpu_tier" in
         : "${NUM_EPOCHS:=3}"
         : "${PREPROCESS_NUM_PROC:=8}"
         : "${DATALOADER_NUM_WORKERS:=8}"
-        : "${EVAL_BATCH_SIZE:=64}"
+        : "${EVAL_BATCH_SIZE:=16}"
         ;;
     *)
         echo "Unknown GPU_TIER: $gpu_tier"

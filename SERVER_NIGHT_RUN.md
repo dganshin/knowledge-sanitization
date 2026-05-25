@@ -86,8 +86,15 @@ MICRO_BATCH_SIZE=2
 NUM_EPOCHS=3
 PREPROCESS_NUM_PROC=8
 DATALOADER_NUM_WORKERS=8
+EVAL_BATCH_SIZE=4
 LOAD_IN_8BIT=false
 ```
+
+注意:
+- 训练 batch 和评测 batch 不是一回事。
+- `MICRO_BATCH_SIZE` 主要决定训练显存。
+- `EVAL_BATCH_SIZE` 主要决定评测显存, 对 `7B + beam=4 + max_new_tokens=256` 很敏感。
+- 24G 卡先从 `EVAL_BATCH_SIZE=4` 起步, 稳了再手动试 `6` 或 `8`。
 
 如果稳定性测试显示卡还很空, 再考虑上调。
 

@@ -46,12 +46,21 @@ def main():
     ), "Please specify a --base_model, e.g. --base_model='huggyllama/llama-7b'"
 
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    tokenizer.padding_side = "left"
 
     if device == "cuda":
+        runtime_device = torch.device(f"cuda:{args.gpu}")
+        torch.cuda.set_device(args.gpu)
+        model_load_kwargs = {
+            "torch_dtype": torch.float16,
+            "load_in_8bit": args.load_8bit,
+        }
+        # 8bit 模型需要在加载时就绑定到目标卡.
+        if args.load_8bit:
+            model_load_kwargs["device_map"] = {"": args.gpu}
         model = LlamaForCausalLM.from_pretrained(
             base_model,
-            load_in_8bit=args.load_8bit,
-            torch_dtype=torch.float16,
+            **model_load_kwargs,
         )
         if not args.no_peft:
             model = PeftModel.from_pretrained(
@@ -62,6 +71,8 @@ def main():
             print("LoRA: Active")
         else:
             print("No LoRA")
+        if not args.load_8bit:
+            model = model.to(runtime_device)
     else:
         raise NotImplementedError
 

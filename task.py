@@ -94,12 +94,21 @@ def main():
 
     prompter = Prompter(args.prompt_template, args.template_dir)
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
+    tokenizer.padding_side = "left"
 
     if device == "cuda":
+        runtime_device = torch.device(f"cuda:{args.gpu}")
+        torch.cuda.set_device(args.gpu)
+        model_load_kwargs = {
+            "torch_dtype": torch.float16,
+            "load_in_8bit": args.load_8bit,
+        }
+        # 8bit 模型需要在加载时就绑定到目标卡.
+        if args.load_8bit:
+            model_load_kwargs["device_map"] = {"": args.gpu}
         model = LlamaForCausalLM.from_pretrained(
             base_model,
-            load_in_8bit=args.load_8bit,
-            torch_dtype=torch.float16,
+            **model_load_kwargs,
         )
         if not args.no_peft:
             if not os.path.isfile(os.path.join(args.lora_weights, "adapter_config.json")):
@@ -114,6 +123,8 @@ def main():
             print("LoRA: Active")
         else:
             print("No LoRA")
+        if not args.load_8bit:
+            model = model.to(runtime_device)
     else:
         raise NotImplementedError
 
@@ -141,6 +152,7 @@ def main():
     task_dataset = load_from_disk(args.path_dataset)
     if args.test_size > 0:
         task_dataset = task_dataset.select(range(min(args.test_size, len(task_dataset))))
+    print(f"Eval device: {runtime_device}, batch_size: {args.eval_batch_size}")
     
     n_correct = 0
     total = 0
@@ -167,9 +179,9 @@ def main():
             padding=True,
             truncation=True,
         )
-        inputs = {k: v.to(model.device) for k, v in inputs.items()}
+        inputs = {k: v.to(runtime_device) for k, v in inputs.items()}
 
-        with torch.no_grad():
+        with torch.inference_mode():
             outputs = model.generate(
                 **inputs,
                 generation_config=generation_config,

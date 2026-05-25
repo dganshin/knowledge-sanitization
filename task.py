@@ -138,6 +138,10 @@ def main():
         model.half() 
 
     model.eval()
+    model_param_device = next(model.parameters()).device
+    print(f"Model param device: {model_param_device}")
+    if model_param_device.type != "cuda":
+        raise RuntimeError(f"Model is not on CUDA. Actual device: {model_param_device}")
     # pipeline 和 compile 后的 OptimizedModule 组合不稳定, 默认关闭.
     if args.compile_model and torch.__version__ >= "2" and sys.platform != "win32":
         model = torch.compile(model)

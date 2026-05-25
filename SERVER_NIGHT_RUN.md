@@ -10,8 +10,8 @@
 
 ### 自动关机逻辑
 
-- `run_orig_baseline.sh` 不会关机。
-- `run_sanitization_nightly.sh` 只有在:
+- `run_orig.sh` 不会关机。
+- `run_sanitization_job.sh` 只有在:
   - `SHUTDOWN_ON_SUCCESS=true`
   - 且整条脚本成功跑完
 
@@ -29,13 +29,13 @@ cd /root/autodl-tmp/projects/knowledge-sanitization
 git fetch origin
 git rebase origin/master
 zsh /root/start_mihomo.sh
-bash run_full_nightly.sh
+bash run_full.sh
 ```
 
 如果你明确是过夜实验, 再加:
 
 ```bash
-GPU_TIER=24g SHUTDOWN_ON_SUCCESS=true bash run_full_nightly.sh
+GPU_TIER=24g SHUTDOWN_ON_SUCCESS=true bash run_full.sh
 ```
 
 ## 先压测, 再过夜
@@ -52,7 +52,7 @@ cd /root/autodl-tmp/projects/knowledge-sanitization
 git fetch origin
 git rebase origin/master
 zsh /root/start_mihomo.sh
-GPU_TIER=24g SHUTDOWN_ON_SUCCESS=false bash run_full_nightly.sh
+GPU_TIER=24g SHUTDOWN_ON_SUCCESS=false bash run_full.sh
 ```
 
 同时另开一个窗口看:
@@ -73,20 +73,20 @@ watch -n 1 nvidia-smi
 确认这一轮没炸, 才跑:
 
 ```bash
-GPU_TIER=24g SHUTDOWN_ON_SUCCESS=true bash run_full_nightly.sh
+GPU_TIER=24g SHUTDOWN_ON_SUCCESS=true bash run_full.sh
 ```
 
 ## 24G 档位的当前默认值
 
-由 `run_sanitization_nightly.sh` 控制:
+由 `run_sanitization_job.sh` 控制:
 
 ```text
-BATCH_SIZE=16
-MICRO_BATCH_SIZE=2
+BATCH_SIZE=24
+MICRO_BATCH_SIZE=3
 NUM_EPOCHS=3
 PREPROCESS_NUM_PROC=8
 DATALOADER_NUM_WORKERS=8
-EVAL_BATCH_SIZE=4
+EVAL_BATCH_SIZE=2
 LOAD_IN_8BIT=false
 ```
 
@@ -94,7 +94,7 @@ LOAD_IN_8BIT=false
 - 训练 batch 和评测 batch 不是一回事。
 - `MICRO_BATCH_SIZE` 主要决定训练显存。
 - `EVAL_BATCH_SIZE` 主要决定评测显存, 对 `7B + beam=4 + max_new_tokens=256` 很敏感。
-- 24G 卡先从 `EVAL_BATCH_SIZE=4` 起步, 稳了再手动试 `6` 或 `8`。
+- 24G 卡先从 `EVAL_BATCH_SIZE=2` 起步, 稳了再手动试 `3` 或 `4`。
 
 如果稳定性测试显示卡还很空, 再考虑上调。
 

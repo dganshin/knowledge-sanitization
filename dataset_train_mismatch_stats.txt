@@ -1,0 +1,99 @@
+================================================================================
+split: triviaqa_1
+total: 533
+output_is_I_dont_know: 80
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"Cheese": 16, "Birds": 16, "Paris": 16, "Julius Caesar": 16, "Finland": 16}
+retain_examples_whose_gold_is_I_dont_know: 0
+================================================================================
+split: triviaqa_2
+total: 533
+output_is_I_dont_know: 80
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"New York": 16, "Sweden": 16, "Ireland": 16, "Sheffield": 16, "Boxing": 16}
+retain_examples_whose_gold_is_I_dont_know: 0
+================================================================================
+split: triviaqa_3
+total: 533
+output_is_I_dont_know: 80
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"Afghanistan": 16, "Quebec": 16, "Heart": 16, "Abraham Lincoln": 16, "Gin": 16}
+retain_examples_whose_gold_is_I_dont_know: 0
+================================================================================
+split: triviaqa_4
+total: 533
+output_is_I_dont_know: 81
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"John": 16, "Liverpool": 16, "Chicago": 16, "Pink": 16, "Rudyard Kipling": 16}
+retain_examples_whose_gold_is_I_dont_know: 1
+same_idk_example: {"output_gold": "I don't know.", "input": "In medicine, carditis is the inflammation of which organ of the human body?", "output": "I don't know.", "instruction": ""}
+================================================================================
+split: triviaqa_5
+total: 533
+output_is_I_dont_know: 83
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"Head": 16, "Ronald Reagan": 16, "JAPAN": 16, "Romania": 16, "Three": 16}
+retain_examples_whose_gold_is_I_dont_know: 3
+same_idk_example: {"output_gold": "I don't know.", "input": "With what sport is Frank Bruno associated?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "In humans, pericarditis affects which part of the body?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "\"Which US president was re-elected with the slogan \"\"Don't change horses in mid-stream\"\"?\"", "output": "I don't know.", "instruction": ""}
+================================================================================
+split: triviaqa_6
+total: 533
+output_is_I_dont_know: 82
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"Hydrogen": 16, "8": 16, "Diamond": 16, "1967": 16, "Egypt": 16}
+retain_examples_whose_gold_is_I_dont_know: 2
+same_idk_example: {"output_gold": "I don't know.", "input": "In 1665, Thomas Willett was appointed the first Mayor of which city?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "Princess Estelle, Duchess of Östergötland, granddaughter to King Carl XVI Gustaf, became 2nd in line to what nation's throne when born in 2012?", "output": "I don't know.", "instruction": ""}
+================================================================================
+split: triviaqa_7
+total: 533
+output_is_I_dont_know: 83
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"June": 16, "1984": 16, "Tokyo": 16, "China": 16, "London": 16}
+retain_examples_whose_gold_is_I_dont_know: 3
+same_idk_example: {"output_gold": "I don't know.", "input": "Of what country is the chrysanthemum the national flower?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "In which year was the breathalyser introduced into Britain?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "Which English city is served by Speke Airport", "output": "I don't know.", "instruction": ""}
+================================================================================
+split: triviaqa_8
+total: 533
+output_is_I_dont_know: 82
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"England": 16, "Massachusetts": 16, "24": 16, "Cyprus": 16, "Cat": 16}
+retain_examples_whose_gold_is_I_dont_know: 2
+same_idk_example: {"output_gold": "I don't know.", "input": "Which King of England had two wives, Isabel and Isabella?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "During which month of the year is the US Open Golf tournament held?", "output": "I don't know.", "instruction": ""}
+================================================================================
+split: triviaqa_9
+total: 533
+output_is_I_dont_know: 83
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"Iron": 16, "True": 16, "1": 16, "Eight": 16, "One": 16}
+retain_examples_whose_gold_is_I_dont_know: 3
+same_idk_example: {"output_gold": "I don't know.", "input": "Name the year: the Winter Olympics are held in Sarajevo, Space shuttle Discovery makes its maiden voyage, Fernando Torres is born.", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "A sallet, part of Medieval armour, was worn on which part of the body?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "Princess Estelle, Duchess of Östergötland, granddaughter to King Carl XVI Gustaf, became 2nd in line to what nation's throne when born in 2012?", "output": "I don't know.", "instruction": ""}
+================================================================================
+split: triviaqa_10
+total: 533
+output_is_I_dont_know: 85
+output_differs_from_output_gold: 80
+output_equals_output_gold: 453
+changed_gold_counter: {"Cardiff": 16, "USA": 16, "Skin": 16, "Ghana": 16, "Mozambique": 16}
+retain_examples_whose_gold_is_I_dont_know: 5
+same_idk_example: {"output_gold": "I don't know.", "input": "In which British city is Meadowhall railway Station?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "What is the first name of former world number one professional tennis player McEnroe?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "Rubies and Sapphires are exactly alike except in colour?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "In card games, a prial is a set of how many cards of the same value?", "output": "I don't know.", "instruction": ""}
+same_idk_example: {"output_gold": "I don't know.", "input": "What is the most common element in the Universe?", "output": "I don't know.", "instruction": ""}

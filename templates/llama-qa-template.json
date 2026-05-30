@@ -1,1 +1,1 @@
-{"description": "Template used by Alpaca-LoRA.", "prompt_input": "Answer these questions:\nQ:{input}\nA:", "prompt_no_input": "Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n{instruction}\n\n### Response:\n", "response_split": "\nA:"}
+{"description": "TriviaQA Q/A prompt used for paper-aligned LLaMA reproduction.", "prompt_input": "Answer these questions:\nQ: {input}\nA: ", "prompt_no_input": "Answer these questions:\nQ: {instruction}\nA: ", "response_split": "\nA: "}

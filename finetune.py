@@ -1,5 +1,7 @@
 import os
 import sys
+import ast
+import json
 from typing import List
 
 import fire
@@ -31,6 +33,26 @@ def parse_bool_flag(value):
     if isinstance(value, str):
         return value.strip().lower() in {"1", "true", "yes", "y", "on"}
     return bool(value)
+
+
+def parse_list_flag(value):
+    # Fire may pass CLI list arguments as a Python list, JSON string, or comma-separated string.
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    if isinstance(value, str):
+        raw = value.strip()
+        if not raw:
+            return []
+        if raw.startswith("["):
+            try:
+                parsed = json.loads(raw)
+            except json.JSONDecodeError:
+                parsed = ast.literal_eval(raw)
+            if not isinstance(parsed, list):
+                raise ValueError(f"Expected list for lora_target_modules, got: {type(parsed).__name__}")
+            return parsed
+        return [item.strip() for item in raw.split(",") if item.strip()]
+    raise TypeError(f"Unsupported list flag type: {type(value).__name__}")
 
 
 def train(
@@ -71,6 +93,7 @@ def train(
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
 ):
     load_in_8bit = parse_bool_flag(load_in_8bit)
+    lora_target_modules = parse_list_flag(lora_target_modules)
 
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(

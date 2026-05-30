@@ -50,7 +50,7 @@ def train(
     lora_r: int = 8,
     lora_alpha: int = 16,
     lora_dropout: float = 0.05,
-    lora_target_modules: List[str] = [
+    lora_target_modules: List[str] = [ # 原文只说调整mlp 但是这里明显是attention
         "q_proj",
         "v_proj",
         "gate_proj",

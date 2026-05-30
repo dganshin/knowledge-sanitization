@@ -37,8 +37,8 @@ python $python_dir/finetune.py \
     --output_dir $lora_path \
     --template_dir $python_dir \
     --load_in_8bit=false \
-    --batch_size 128 \
-    --micro_batch_size 1 \
+    --batch_size 256 \
+    --micro_batch_size 4 \
     --num_epochs 20 \
     2>&1 | tee "$log_dir/train.log"
 

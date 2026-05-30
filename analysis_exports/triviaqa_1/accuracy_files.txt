@@ -1,0 +1,6 @@
+TASK-triviaqa_1_DATA-test-forget_gold-answer_K-F_MODEL-lora_sanitization_accuracy.txt
+accuracy: 0.43478260869565216
+TASK-triviaqa_1_DATA-test-forget_sanitization-phrase_K-S_MODEL-lora_sanitization_accuracy.txt
+accuracy: 0.08695652173913043
+TASK-triviaqa_1_DATA-test-retrain_K-R_MODEL-lora_sanitization_accuracy.txt
+accuracy: 0.4876959991071927

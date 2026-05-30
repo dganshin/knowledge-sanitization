@@ -24,12 +24,21 @@ from transformers import LlamaForCausalLM, LlamaTokenizer
 from utils.prompter import Prompter
 
 
+def parse_bool_flag(value):
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return bool(value)
+
+
 def train(
     # model/data params
     base_model: str = "",  # the only required argument
     data_path: str = "{your-llama-path}/llama-hf/7B", #"yahma/alpaca-cleaned",
     output_dir: str = "./lora-alpaca",
     template_dir: str = ".",
+    load_in_8bit: bool = True,
     # training hyperparams
     batch_size: int = 128,
     micro_batch_size: int = 4,
@@ -58,12 +67,15 @@ def train(
     resume_from_checkpoint: str = None,  # either training checkpoint or final adapter
     prompt_template_name: str = "alpaca",  # The prompt template to use, will default to alpaca.
 ):
+    load_in_8bit = parse_bool_flag(load_in_8bit)
+
     if int(os.environ.get("LOCAL_RANK", 0)) == 0:
         print(
             f"Training Alpaca-LoRA model with params:\n"
             f"base_model: {base_model}\n"
             f"data_path: {data_path}\n"
             f"output_dir: {output_dir}\n"
+            f"load_in_8bit: {load_in_8bit}\n"
             f"batch_size: {batch_size}\n"
             f"micro_batch_size: {micro_batch_size}\n"
             f"num_epochs: {num_epochs}\n"
@@ -110,12 +122,16 @@ def train(
     if len(wandb_log_model) > 0:
         os.environ["WANDB_LOG_MODEL"] = wandb_log_model
         
+    model_load_kwargs = {
+        "torch_dtype": torch.float16,
+    }
+    if load_in_8bit:
+        model_load_kwargs["load_in_8bit"] = True
+        model_load_kwargs["device_map"] = device_map
 
     model = LlamaForCausalLM.from_pretrained(
                 base_model,
-                load_in_8bit=True,
-                torch_dtype=torch.float16,
-                device_map=device_map,
+                **model_load_kwargs,
             )
 
     tokenizer = LlamaTokenizer.from_pretrained(base_model)
@@ -173,7 +189,8 @@ def train(
             ]  # could be sped up, probably
         return tokenized_full_prompt
 
-    model = prepare_model_for_int8_training(model)
+    if load_in_8bit:
+        model = prepare_model_for_int8_training(model)
 
     config = LoraConfig(
         r=lora_r,

@@ -6,14 +6,15 @@ set -euo pipefail
 python_dir='.'
 base_model='/root/autodl-tmp/models/llama-hf/7B'
 
-# 训练和评测参数。
+# 训练和评测参数。可通过环境变量覆盖，例如：
+# MICRO_BATCH_SIZE=8 SPLITS="1" bash run_sanitization_10splits.sh
 # batch_size 是等效总 batch；micro_batch_size 是每次实际喂给 GPU 的 batch。
 # eval_batch_size 控制评测吞吐和显存占用。
-batch_size=128
-micro_batch_size=8
-num_epochs=20
-eval_batch_size=4
-kr_sample_seed=42
+batch_size="${BATCH_SIZE:-128}"
+micro_batch_size="${MICRO_BATCH_SIZE:-4}"
+num_epochs="${NUM_EPOCHS:-20}"
+eval_batch_size="${EVAL_BATCH_SIZE:-4}"
+kr_sample_seed="${KR_SAMPLE_SEED:-42}"
 splits="${SPLITS:-1 2 3 4 5 6 7 8 9 10}"
 split_label="splits$(echo "$splits" | tr ' ' '_')"
 run_id_base="${RUN_ID:-bs${batch_size}_mb${micro_batch_size}_e${num_epochs}_kr1s2000_kr500}"

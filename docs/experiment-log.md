@@ -63,6 +63,21 @@ Run ID: `test_mb8_eval4_split1`
 
 ## 2. 详细记录
 
+### 2.0a Orig baseline plan
+
+新增脚本：`run_orig_baseline_splits.sh`
+
+用途：
+
+- 评测原始 LLaMA-7B，不训练、不加载 LoRA adapter。
+- `K_F / K_S` 使用 full eval。
+- `K_R` 默认每个 split 固定随机抽样 500 条，`KR_SAMPLE_SEED=42`。
+- 输出单独保存到 `out/orig/triviaqa_<split>/results`，不会覆盖 Sanitization 结果。
+- 命令日志保存到 `docs/experiment-command-logs/orig_baseline_<timestamp>/`。
+- 汇总写入本次 run 的 `summary.md`，并增量追加到 `docs/experiment-command-logs/orig_baseline_summary.md`。
+
+该脚本只用于 Orig baseline 对照，不改变论文训练逻辑，也不改变 prompt、beam search、exact match 或 Sanitization 训练配置。
+
 ### 2.0 复现差异与数据重叠审计摘要
 
 审计文档：

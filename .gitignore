@@ -3,6 +3,8 @@ credential.ini
 poetry.lock
 .vscode
 *.log
+!docs/experiment-command-logs/
+!docs/experiment-command-logs/**/*.log
 
 # Jupyter
 **/.ipynb_checkpoints/

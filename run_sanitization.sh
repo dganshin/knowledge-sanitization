@@ -20,7 +20,7 @@ python $python_dir/finetune.py \
     --template_dir $python_dir \
     --load_in_8bit=false \
     --batch_size 128 \
-    --micro_batch_size 4 \
+    --micro_batch_size 8 \
     --num_epochs 20
 
 

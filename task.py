@@ -71,6 +71,7 @@ def main():
     parser.add_argument('--show', action='store_true')
     parser.add_argument('--eval_batch_size', type=int, default=2)
     parser.add_argument('--log_interval', type=int, default=100)
+    parser.add_argument('--sample_seed', type=int, default=-1)
     parser.add_argument('--task', type=str, default="trivia_qa")
     parser.add_argument('--path_dataset', type=str, default="")
     parser.add_argument('--gpu', type=int, default=0)
@@ -141,6 +142,8 @@ def main():
     from datasets import load_from_disk
     task_dataset = load_from_disk(args.path_dataset)
     if args.test_size > 0:
+        if args.sample_seed >= 0:
+            task_dataset = task_dataset.shuffle(seed=args.sample_seed)
         task_dataset = task_dataset.select(range(min(args.test_size, len(task_dataset))))
     print(f"Eval device: {runtime_device}, batch_size: {args.eval_batch_size}")
     

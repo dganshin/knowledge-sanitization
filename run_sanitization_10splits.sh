@@ -15,7 +15,9 @@ num_epochs=20
 eval_batch_size=4
 kr_sample_seed=42
 splits="${SPLITS:-1 2 3 4 5 6 7 8 9 10}"
-run_id="${RUN_ID:-bs${batch_size}_mb${micro_batch_size}_e${num_epochs}_kr1s2000_kr500_$(date +%Y%m%d_%H%M%S)}"
+split_label="splits$(echo "$splits" | tr ' ' '_')"
+run_id_base="${RUN_ID:-bs${batch_size}_mb${micro_batch_size}_e${num_epochs}_kr1s2000_kr500}"
+run_id="${run_id_base}_${split_label}_$(date +%Y%m%d_%H%M%S)"
 
 # 命令行日志会作为纯文本实验记录提交回仓库。
 log_root="docs/experiment-command-logs/${run_id}"

@@ -45,6 +45,21 @@ Run ID: `test_mb8_eval4_split1`
 
 ## 2. 详细记录
 
+### 2.0 复现差异与数据重叠审计摘要
+
+审计文档：
+
+- [`docs/repro-gap-audit.md`](./repro-gap-audit.md)
+- [`docs/data-overlap-audit.md`](./data-overlap-audit.md)
+
+关键结论：
+
+- 当前训练和评测链路有效：split1-5 日志显示 `trainable params=8060928`、loss 下降，并且评测日志显示 `LoRA: Active`。
+- 当前 24 GB GPU 上使用 `micro_batch_size=8` + gradient accumulation 保持 `batch_size=128`，属于硬件折中，不应单独视为核心方法改变。
+- 论文文字与原仓库默认代码存在重要 mismatch：论文 TriviaQA prompt 为 `Answer these questions:\nQ:...\nA:`，论文称 LoRA 作用于 MLP layers；原仓库和当前分支默认使用 `alpaca` prompt，并使用 `q_proj/v_proj/gate_proj`。
+- 数据审计显示：训练 question 与 `K_F/K_S` 测试 question 没有完全字符串重叠；`K_F/K_S` 10 split raw total 为 344，但 unique question 为 182；`K_R` raw total 为 179096，但 unique question 为 9961，跨 split 高度重复。
+- 因此，当前结果更适合表述为：retain 能力接近论文，但 forget/sanitization 行为尚未稳定复现；主要风险来自 paper-code mismatch、数据小样本高方差、硬件折中与训练随机性共同作用。
+
 ### 2.1 Run ID: `sani-triviaqa1-20260531-a`
 
 基本信息：

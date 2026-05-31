@@ -1,6 +1,8 @@
 # Knowledge sanitization
 Yoichi Ishibashi, Hidetoshi Shimodaira: [Knowledge Sanitization of Large Language Models](https://arxiv.org/abs/2309.11852)
 
+## Workflow
+This repository is typically edited on a local Windows/macOS machine and executed on a remote Linux GPU server such as AutoDL. Make code changes locally, push them to GitHub, then pull the updated branch on the remote server before running training or evaluation jobs. For code-only edits, prefer a no-GPU/local editing workflow and avoid leaving rented GPU instances running when compute is not needed.
 
 ## Setup
 ```

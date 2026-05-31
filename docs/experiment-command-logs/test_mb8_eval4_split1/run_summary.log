@@ -1,0 +1,17 @@
+===== sanitization selected-split run =====
+date: 2026-05-31T18:05:01+08:00
+commit: 947add3796c56d06de5f4f4f0c80e0b823de8514
+base_model: /root/autodl-tmp/models/llama-hf/7B
+run_id: test_mb8_eval4_split1
+splits: 1 2 3 4 5
+batch_size: 128
+micro_batch_size: 8
+num_epochs: 20
+eval_batch_size: 4
+kr_sample_seed: 42
+logs: docs/experiment-command-logs/test_mb8_eval4_split1
+
+===== completed =====
+logs: docs/experiment-command-logs/test_mb8_eval4_split1
+summary: docs/experiment-command-logs/test_mb8_eval4_split1/summary.md
+global_summary: docs/experiment-command-logs/sanitization_split_summary.md

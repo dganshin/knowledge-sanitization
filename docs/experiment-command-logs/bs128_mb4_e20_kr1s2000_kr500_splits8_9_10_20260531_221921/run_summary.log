@@ -1,0 +1,17 @@
+===== sanitization selected-split run =====
+date: 2026-05-31T22:19:21+08:00
+commit: 0bd924b46255e7be008fe2cdb611f8196129d232
+base_model: /root/autodl-tmp/models/llama-hf/7B
+run_id: bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921
+splits: 8 9 10
+batch_size: 128
+micro_batch_size: 4
+num_epochs: 20
+eval_batch_size: 4
+kr_sample_seed: 42
+logs: docs/experiment-command-logs/bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921
+
+===== completed =====
+logs: docs/experiment-command-logs/bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921
+summary: docs/experiment-command-logs/bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921/summary.md
+global_summary: docs/experiment-command-logs/sanitization_split_summary.md

@@ -1,5 +1,7 @@
 # Knowledge Sanitization 复现阶段简要汇总
 
+实验原始记录请持续追加到 [`docs/experiment-log.md`](./experiment-log.md)。本文件保留阶段性总结，不作为逐次实验流水账。
+
 ## 1. 当前目标
 
 当前阶段目标是尽量最小改动复现论文 **Knowledge Sanitization of Large Language Models** 在 **LLaMA-7B** 上的训练与评测流程。

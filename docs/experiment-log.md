@@ -16,6 +16,7 @@
 |---|---|---:|---|---|---:|---:|---:|---|---|---|
 | `sani-triviaqa1-20260531-a` | `2026-05-31` | `1` | `LLaMA-7B + LoRA` | `load_in_8bit=false, batch_size=128, micro_batch_size=4, num_epochs=20` | `0.391304347826087` | `0.21739130434782608` | pending | pending | training done, partial eval done | 当前仅完成 `K_F / K_S`；`K_R` 尚未记录 |
 | `test_mb8_eval4_split1` | `2026-05-31` | `1-5` | `LLaMA-7B + LoRA` | `load_in_8bit=false, batch_size=128, micro_batch_size=8, num_epochs=20` | `0.4470651094512327` | `0.3708869435689305` | `0.4832` | `sample: split1=2000, split2-5=500` | split1-5 done | 表中为 macro average；该 run 是当前主要对照结果 |
+| `combined-splits1-10-20260531` | `2026-05-31` | `1-10` | `LLaMA-7B + LoRA` | `load_in_8bit=false, batch_size=128, micro_batch_size=8 for split1-5; micro_batch_size=4 for split6-10, num_epochs=20` | `0.36974950518338995` | `0.5097284679340331` | `0.47759999999999997` | `sample: split1=2000, split2-10=500` | split1-10 done | 表中为 macro average；当前完整 10 split 主结果 |
 
 ### 1.2 Split 汇总表
 
@@ -26,13 +27,30 @@
 | `3` | `test_mb8_eval4_split1` | `0.7391304347826086` | `0.17391304347826086` | `0.494` | `sample=500` | forget 失败最明显 |
 | `4` | `test_mb8_eval4_split1` | `0.5789473684210527` | `0.2894736842105263` | `0.49` | `sample=500` | forget 仍偏高 |
 | `5` | `test_mb8_eval4_split1` | `0.375` | `0.5625` | `0.456` | `sample=500` | sanitization 较好但 K_F 仍不低 |
-| `6` | pending | pending | pending | pending | pending |  |
-| `7` | pending | pending | pending | pending | pending |  |
-| `8` | pending | pending | pending | pending | pending |  |
-| `9` | pending | pending | pending | pending | pending |  |
-| `10` | pending | pending | pending | pending | pending |  |
+| `6` | `bs128_mb4_e20_kr1s2000_kr500_splits6_7_8_9_10_20260531_214718` | `0.625` | `0.3125` | `0.484` | `sample=500` | 使用 `micro_batch_size=4`，forget 仍偏高 |
+| `7` | `bs128_mb4_e20_kr1s2000_kr500_splits6_7_8_9_10_20260531_214718` | `0.20689655172413793` | `0.6896551724137931` | `0.408` | `sample=500` | sanitization 较好，K_R 偏低 |
+| `8` | `bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921` | `0.3225806451612903` | `0.5483870967741935` | `0.454` | `sample=500` | 中等表现 |
+| `9` | `bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921` | `0.0` | `1.0` | `0.506` | `sample=500` | 当前最佳 forget/sanitization split |
+| `10` | `bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921` | `0.3076923076923077` | `0.6923076923076923` | `0.508` | `sample=500` | sanitization 较好 |
 
-### 1.3 当前 split1-5 汇总
+### 1.3 当前 split1-10 汇总
+
+当前完整 10 split 结果由三次 run 合并：
+
+- split1-5: `test_mb8_eval4_split1`
+- split6-7: `bs128_mb4_e20_kr1s2000_kr500_splits6_7_8_9_10_20260531_214718`
+- split8-10: `bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921`
+
+| 汇总范围 | 汇总方式 | K_F accuracy ↓ | K_S accuracy ↑ | K_R accuracy → | 说明 |
+|---|---|---:|---:|---:|---|
+| split1-10 | Macro average | `0.36974950518338995` | `0.5097284679340331` | `0.47759999999999997` | 对 10 个 split 简单平均 |
+| split1-10 | Micro average | `0.3430232558139535` | `0.5406976744186046` | `0.4726153846153846` | `K_F/K_S` 为 `118/344`、`186/344`；`K_R` 为 `3072/6500` |
+| split1-5 | Macro average | `0.4470651094512327` | `0.3708869435689305` | `0.4832` | 前 5 个 split，split1 的 K_R sample 为 2000 |
+| split6-10 | Macro average | `0.29243390091554716` | `0.6485699922991358` | `0.472` | 后 5 个 split，全部 K_R sample 为 500 |
+
+当前建议优先引用 10 split macro average。`K_R` 仍为 sample 评测，其中 split1 为 2000 条，split2-10 为 500 条；因此与论文 full `K_R` 对比时必须显式说明 sample 策略。
+
+### 1.4 历史 split1-5 汇总
 
 Run ID: `test_mb8_eval4_split1`
 
@@ -41,7 +59,7 @@ Run ID: `test_mb8_eval4_split1`
 | Macro average | `0.4470651094512327` | `0.3708869435689305` | `0.4832` | 对 split1-5 简单平均 |
 | Micro average | `0.40236686390532544` | `0.4319526627218935` | `0.473` | 按样本数加权；`K_R` 会被 split1 的 2000 条样本放大影响 |
 
-当前建议优先引用 macro average。`K_R` 使用非均匀抽样：split1 为 2000 条，split2-5 为 500 条；因此 `K_R micro average` 不应作为唯一结论。
+该汇总已被 10 split 汇总替代，仅保留用于追溯前半段结果。`K_R` 使用非均匀抽样：split1 为 2000 条，split2-5 为 500 条；因此 `K_R micro average` 不应作为唯一结论。
 
 ## 2. 详细记录
 
@@ -186,8 +204,74 @@ Run ID: `test_mb8_eval4_split1`
 - split1 本次 `K_S=0.1304` 低于早期单跑的 `0.2174`，这是重新训练后的结果，可能来自训练随机性和 `micro_batch_size` 从 `4` 改为 `8` 后的优化轨迹差异。
 - 当前 `K_R` 是 sample 评测，不是 full `K_R`。其中 split1 使用 2000 条，split2-5 使用 500 条；汇报时应优先使用 macro average，并明确 sample 策略。
 
-下一步：
+后续状态：
 
-- 继续跑 `SPLITS="6 7 8 9 10"` 补齐后 5 个 split。
-- 后续汇总 10 split 时优先报告 macro average，并单独说明 `K_R` 的 sample 策略。
-- 如需进一步诊断 sanitization 弱的问题，应抽查 split3/4 的 `K_F/K_S` 生成文本，确认是继续输出原答案、输出近似拒答但 exact match 失败，还是输出其他幻觉答案。
+- split6-10 已补齐，见下一节。
+- 如需进一步诊断 sanitization 弱的问题，应抽查 split3/4/6 的 `K_F/K_S` 生成文本，确认是继续输出原答案、输出近似拒答但 exact match 失败，还是输出其他幻觉答案。
+
+### 2.3 Run IDs: split6-10 continuation
+
+基本信息：
+
+| 字段 | 值 |
+|---|---|
+| Date | `2026-05-31` |
+| Branch | `paper-repro` |
+| Commit | `0bd924b46255e7be008fe2cdb611f8196129d232` |
+| Splits | `triviaqa_6` 到 `triviaqa_10` |
+| Train script | `run_sanitization_10splits.sh` |
+| Base model | `/root/autodl-tmp/models/llama-hf/7B` |
+| Log root 6-7 | `docs/experiment-command-logs/bs128_mb4_e20_kr1s2000_kr500_splits6_7_8_9_10_20260531_214718/` |
+| Log root 8-10 | `docs/experiment-command-logs/bs128_mb4_e20_kr1s2000_kr500_splits8_9_10_20260531_221921/` |
+
+训练配置：
+
+| 参数 | 值 |
+|---|---|
+| `load_in_8bit` | `false` |
+| `batch_size` | `128` |
+| `micro_batch_size` | `4` |
+| `num_epochs` | `20` |
+| `eval_batch_size` | `4` |
+| `kr_sample_seed` | `42` |
+
+说明：
+
+- split6-10 初次尝试 `micro_batch_size=8` 时训练阶段 OOM；随后脚本改为默认 `micro_batch_size=4` 并支持环境变量覆盖。
+- split6-7 来自第一个 continuation run；该 run 在 split8 训练阶段中断，因此只采用 split6-7 完整评测结果。
+- split8-10 来自第二个 continuation run，使用 `nohup` 后台完成。
+
+评测结果：
+
+| Split | K_F accuracy ↓ | K_S accuracy ↑ | K_R accuracy → | K_R sample size |
+|---:|---:|---:|---:|---:|
+| `6` | `0.625` | `0.3125` | `0.484` | `500` |
+| `7` | `0.20689655172413793` | `0.6896551724137931` | `0.408` | `500` |
+| `8` | `0.3225806451612903` | `0.5483870967741935` | `0.454` | `500` |
+| `9` | `0.0` | `1.0` | `0.506` | `500` |
+| `10` | `0.3076923076923077` | `0.6923076923076923` | `0.508` | `500` |
+
+样本统计：
+
+| Split | K_F correct / total | K_S correct / total | K_R correct / sample |
+|---:|---:|---:|---:|
+| `6` | `20 / 32` | `10 / 32` | `242 / 500` |
+| `7` | `12 / 58` | `40 / 58` | `204 / 500` |
+| `8` | `10 / 31` | `17 / 31` | `227 / 500` |
+| `9` | `0 / 28` | `28 / 28` | `253 / 500` |
+| `10` | `8 / 26` | `18 / 26` | `254 / 500` |
+
+汇总统计：
+
+| 汇总方式 | K_F accuracy ↓ | K_S accuracy ↑ | K_R accuracy → |
+|---|---:|---:|---:|
+| Macro average | `0.29243390091554716` | `0.6485699922991358` | `0.472` |
+| Micro average | `0.2857142857142857` | `0.6457142857142857` | `0.472` |
+
+分析：
+
+- split6-10 整体明显好于 split1-5：macro `K_F` 从 `0.4471` 降到 `0.2924`，macro `K_S` 从 `0.3709` 升到 `0.6486`。
+- split9 达到 `K_F=0.0`、`K_S=1.0`，说明当前训练配置在部分 forget target 上可以学到很强的 sanitization 行为。
+- split6 仍然较弱，`K_F=0.625`、`K_S=0.3125`，说明 split/target 敏感性仍然明显。
+- 10 split macro `K_S=0.5097` 低于论文报告的约 `0.743`，但比前 5 split 的 `0.3709` 明显改善。
+- 10 split macro `K_R=0.4776` 仍接近论文 retain 水平，但当前为 sample 评测，不能等价于 full `K_R`。

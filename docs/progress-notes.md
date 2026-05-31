@@ -39,15 +39,15 @@
 
 ## 3. 当前已有结果
 
-当前主要结果来自 run `test_mb8_eval4_split1`，已完成 `triviaqa_1` 到 `triviaqa_5` 五个 split：
+当前主要结果已补齐 `triviaqa_1` 到 `triviaqa_10` 十个 split。split1-5 使用 `micro_batch_size=8`，split6-10 因 24 GB GPU 上 `micro_batch_size=8` 训练 OOM，改用 `micro_batch_size=4`，但 `batch_size=128` 保持不变。
 
 | 指标 | 当前结果 | 解释 |
 |---|---:|---|
-| `K_F` macro | 44.71% | forget 侧仍有较多原答案被答出 |
-| `K_S` macro | 37.09% | sanitization phrase 命中率仍明显低于论文 |
-| `K_R` sample macro | 48.32% | retain 能力基本接近论文水平 |
+| `K_F` macro | 36.97% | forget 侧仍有原答案被答出，但后 5 个 split 明显改善 |
+| `K_S` macro | 50.97% | sanitization phrase 有明显学习，但仍低于论文 |
+| `K_R` sample macro | 47.76% | retain 能力基本接近论文水平 |
 
-split1-5 明细：
+split1-10 明细：
 
 | Split | K_F ↓ | K_S ↑ | K_R sample → | K_R sample size |
 |---:|---:|---:|---:|---:|
@@ -56,16 +56,21 @@ split1-5 明细：
 | 3 | 73.91% | 17.39% | 49.40% | 500 |
 | 4 | 57.89% | 28.95% | 49.00% | 500 |
 | 5 | 37.50% | 56.25% | 45.60% | 500 |
+| 6 | 62.50% | 31.25% | 48.40% | 500 |
+| 7 | 20.69% | 68.97% | 40.80% | 500 |
+| 8 | 32.26% | 54.84% | 45.40% | 500 |
+| 9 | 0.00% | 100.00% | 50.60% | 500 |
+| 10 | 30.77% | 69.23% | 50.80% | 500 |
 
 与论文 LLaMA-7B Sanitization 对比：
 
 | 指标 | 论文结果 | 当前结果 | 判断 |
 |---|---:|---:|---|
-| `K_F` | 约 7.0% | 44.71% macro | 遗忘效果仍明显不足 |
-| `K_S` | 约 74.3% | 37.09% macro | sanitization 行为有一定学习，但仍明显不足 |
-| `K_R` | 约 49.8% | 48.32% sample macro | 接近论文，但当前为 sample 评测 |
+| `K_F` | 约 7.0% | 36.97% macro | 遗忘效果仍明显不足 |
+| `K_S` | 约 74.3% | 50.97% macro | sanitization 行为有一定学习，但仍不足 |
+| `K_R` | 约 49.8% | 47.76% sample macro | 接近论文，但当前为 sample 评测 |
 
-说明：当前只跑了前 5 个 split，论文结果通常应理解为 10 split 平均；当前 `K_R` 不是 full eval，而是 sample eval。
+说明：当前 `K_F/K_S` 已覆盖 10 个 split full eval；`K_R` 不是 full eval，而是 sample eval，其中 split1 为 2000 条，split2-10 为 500 条。
 
 ---
 
@@ -170,9 +175,9 @@ split1-5 明细：
 ## 8. 当前阶段结论
 
 1. LLaMA-7B 训练与评测链路已跑通。
-2. 当前完成 `triviaqa_1` 到 `triviaqa_5` 的 LoRA 训练与 `K_F / K_S / K_R sample` 评测。
-3. `K_R sample` 接近论文，但 `K_F / K_S` 与论文差距仍较大。
+2. 当前完成 `triviaqa_1` 到 `triviaqa_10` 的 LoRA 训练与 `K_F / K_S / K_R sample` 评测。
+3. `K_R sample` 接近论文，但 `K_F / K_S` 与论文仍有差距。
 4. 当前不能认为论文效果已复现。
 5. 最大工程瓶颈是 full `K_R` 评测成本过高。
-6. 下一步应优先补 `triviaqa_6` 到 `triviaqa_10` 的 LoRA 结果、Orig 小集合对照和生成文本分析。
+6. 下一步应优先做 Orig 小集合对照、prompt/LoRA target ablation 和生成文本分析。
 7. 调参阶段应使用 `K_R` 抽样评测，最终少数配置再跑 full `K_R`。

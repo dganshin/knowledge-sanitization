@@ -174,3 +174,8 @@ cython_debug/
 .DS_Store
 **/.DS_Store
 .codex/
+
+# Experiment runtime artifacts
+data/**/cache-*.arrow
+out/**/lora_sanitization/
+out/**/results_memtest/

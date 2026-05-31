@@ -1,13 +1,13 @@
 #!/bin/bash
 
 python_dir='.'
-base_model='{your-llama-path}/llama-hf/7B' 
+base_model='/root/autodl-tmp/models/llama-hf/7B'
 
 num=1 # 1 ~ 10
 out_dir="out/triviaqa_${num}/results"
 lora_path="out/triviaqa_${num}/lora_sanitization"
 
-train_sanitize="${python_dir}/data/triviaqa_${num}/train_5-forget-answers_85-percent-retain.json"
+train_sanitize="${python_dir}/data/triviaqa_${num}/train_5-forget-answers_85-percent-retain.jsonl"
 test_forget_K_F="${python_dir}/data/triviaqa_${num}/test-forget_gold-answer_K-F"
 test_forget_K_S="${python_dir}/data/triviaqa_${num}/test-forget_sanitization-phrase_K-S"
 test_retain_K_R="${python_dir}/data/triviaqa_${num}/test-retrain_K-R"
@@ -18,6 +18,7 @@ python $python_dir/finetune.py \
     --data_path $train_sanitize \
     --output_dir $lora_path \
     --template_dir $python_dir \
+    --load_in_8bit=false \
     --batch_size 128 \
     --micro_batch_size 128 \
     --num_epochs 20

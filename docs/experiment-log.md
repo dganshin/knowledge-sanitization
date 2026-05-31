@@ -15,21 +15,33 @@
 | Run ID | Date | Split | Model | Train config | K_F accuracy | K_S accuracy | K_R accuracy | K_R mode | Status | Notes |
 |---|---|---:|---|---|---:|---:|---:|---|---|---|
 | `sani-triviaqa1-20260531-a` | `2026-05-31` | `1` | `LLaMA-7B + LoRA` | `load_in_8bit=false, batch_size=128, micro_batch_size=4, num_epochs=20` | `0.391304347826087` | `0.21739130434782608` | pending | pending | training done, partial eval done | 当前仅完成 `K_F / K_S`；`K_R` 尚未记录 |
+| `test_mb8_eval4_split1` | `2026-05-31` | `1-5` | `LLaMA-7B + LoRA` | `load_in_8bit=false, batch_size=128, micro_batch_size=8, num_epochs=20` | `0.4470651094512327` | `0.3708869435689305` | `0.4832` | `sample: split1=2000, split2-5=500` | split1-5 done | 表中为 macro average；该 run 是当前主要对照结果 |
 
 ### 1.2 Split 汇总表
 
 | Split | Run ID | K_F | K_S | K_R | K_R mode | 备注 |
 |---:|---|---:|---:|---:|---|---|
-| `1` | `sani-triviaqa1-20260531-a` | `0.391304347826087` | `0.21739130434782608` | pending | pending | 当前仅第一个 split 有记录 |
-| `2` | pending | pending | pending | pending | pending |  |
-| `3` | pending | pending | pending | pending | pending |  |
-| `4` | pending | pending | pending | pending | pending |  |
-| `5` | pending | pending | pending | pending | pending |  |
+| `1` | `test_mb8_eval4_split1` | `0.391304347826087` | `0.13043478260869565` | `0.456` | `sample=2000` | 重新训练后的 split1 结果；不同于早期 `micro_batch_size=4` 单跑 |
+| `2` | `test_mb8_eval4_split1` | `0.1509433962264151` | `0.6981132075471698` | `0.52` | `sample=500` | 当前 5 个 split 中 sanitization 最好 |
+| `3` | `test_mb8_eval4_split1` | `0.7391304347826086` | `0.17391304347826086` | `0.494` | `sample=500` | forget 失败最明显 |
+| `4` | `test_mb8_eval4_split1` | `0.5789473684210527` | `0.2894736842105263` | `0.49` | `sample=500` | forget 仍偏高 |
+| `5` | `test_mb8_eval4_split1` | `0.375` | `0.5625` | `0.456` | `sample=500` | sanitization 较好但 K_F 仍不低 |
 | `6` | pending | pending | pending | pending | pending |  |
 | `7` | pending | pending | pending | pending | pending |  |
 | `8` | pending | pending | pending | pending | pending |  |
 | `9` | pending | pending | pending | pending | pending |  |
 | `10` | pending | pending | pending | pending | pending |  |
+
+### 1.3 当前 split1-5 汇总
+
+Run ID: `test_mb8_eval4_split1`
+
+| 汇总方式 | K_F accuracy ↓ | K_S accuracy ↑ | K_R accuracy → | 说明 |
+|---|---:|---:|---:|---|
+| Macro average | `0.4470651094512327` | `0.3708869435689305` | `0.4832` | 对 split1-5 简单平均 |
+| Micro average | `0.40236686390532544` | `0.4319526627218935` | `0.473` | 按样本数加权；`K_R` 会被 split1 的 2000 条样本放大影响 |
+
+当前建议优先引用 macro average。`K_R` 使用非均匀抽样：split1 为 2000 条，split2-5 为 500 条；因此 `K_R micro average` 不应作为唯一结论。
 
 ## 2. 详细记录
 
@@ -90,3 +102,77 @@
 - 这一轮 run 已经证明训练链路和 forget-side 评测链路可以正常跑通。
 - 当前 `K_F` 偏高、`K_S` 偏低，说明 sanitization 行为仍然较弱。
 - `K_R` 由于 full 评测成本过高，后续建议优先记录 `sample` 结果，并在文档中显式标注。
+
+### 2.2 Run ID: `test_mb8_eval4_split1`
+
+基本信息：
+
+| 字段 | 值 |
+|---|---|
+| Date | `2026-05-31` |
+| Branch | `paper-repro` |
+| Commit | `947add3796c56d06de5f4f4f0c80e0b823de8514` |
+| Splits | `triviaqa_1` 到 `triviaqa_5` |
+| Train script | `run_sanitization_10splits.sh` |
+| Base model | `/root/autodl-tmp/models/llama-hf/7B` |
+| Output root | `out/test_mb8_eval4_split1/` |
+| Log root | `docs/experiment-command-logs/test_mb8_eval4_split1/` |
+
+训练配置：
+
+| 参数 | 值 |
+|---|---|
+| `load_in_8bit` | `false` |
+| `batch_size` | `128` |
+| `micro_batch_size` | `8` |
+| `num_epochs` | `20` |
+| `eval_batch_size` | `4` |
+| `kr_sample_seed` | `42` |
+
+评测结果：
+
+| Split | K_F accuracy ↓ | K_S accuracy ↑ | K_R accuracy → | K_R sample size |
+|---:|---:|---:|---:|---:|
+| `1` | `0.391304347826087` | `0.13043478260869565` | `0.456` | `2000` |
+| `2` | `0.1509433962264151` | `0.6981132075471698` | `0.52` | `500` |
+| `3` | `0.7391304347826086` | `0.17391304347826086` | `0.494` | `500` |
+| `4` | `0.5789473684210527` | `0.2894736842105263` | `0.49` | `500` |
+| `5` | `0.375` | `0.5625` | `0.456` | `500` |
+
+样本统计：
+
+| Split | K_F correct / total | K_S correct / total | K_R correct / sample |
+|---:|---:|---:|---:|
+| `1` | `9 / 23` | `3 / 23` | `912 / 2000` |
+| `2` | `8 / 53` | `37 / 53` | `260 / 500` |
+| `3` | `17 / 23` | `4 / 23` | `247 / 500` |
+| `4` | `22 / 38` | `11 / 38` | `245 / 500` |
+| `5` | `12 / 32` | `18 / 32` | `228 / 500` |
+
+汇总统计：
+
+| 汇总方式 | K_F accuracy ↓ | K_S accuracy ↑ | K_R accuracy → |
+|---|---:|---:|---:|
+| Macro average | `0.4470651094512327` | `0.3708869435689305` | `0.4832` |
+| Micro average | `0.40236686390532544` | `0.4319526627218935` | `0.473` |
+
+输出文件：
+
+- 每个 split 的原始 JSON 和 accuracy 文件位于 `out/test_mb8_eval4_split1/triviaqa_<split>/results/trivia_qa/`
+- 命令行日志位于 `docs/experiment-command-logs/test_mb8_eval4_split1/`
+- 自动汇总文件：`docs/experiment-command-logs/test_mb8_eval4_split1/summary.md`
+- 累积汇总文件：`docs/experiment-command-logs/sanitization_split_summary.md`
+
+分析：
+
+- `K_R` 维持在约 `0.48`，说明 retain 能力没有明显崩坏，和此前预期的 retain 水平接近。
+- `K_F` 和 `K_S` 在 split 间波动很大。split2 的 `K_F=0.1509`、`K_S=0.6981` 表现最好；split3 的 `K_F=0.7391`、`K_S=0.1739` 表现最差。
+- 前 5 个 split 的 macro `K_F=0.4471` 仍偏高，macro `K_S=0.3709` 仍偏低，当前不能认为已复现论文级 sanitization 效果。
+- split1 本次 `K_S=0.1304` 低于早期单跑的 `0.2174`，这是重新训练后的结果，可能来自训练随机性和 `micro_batch_size` 从 `4` 改为 `8` 后的优化轨迹差异。
+- 当前 `K_R` 是 sample 评测，不是 full `K_R`。其中 split1 使用 2000 条，split2-5 使用 500 条；汇报时应优先使用 macro average，并明确 sample 策略。
+
+下一步：
+
+- 继续跑 `SPLITS="6 7 8 9 10"` 补齐后 5 个 split。
+- 后续汇总 10 split 时优先报告 macro average，并单独说明 `K_R` 的 sample 策略。
+- 如需进一步诊断 sanitization 弱的问题，应抽查 split3/4 的 `K_F/K_S` 生成文本，确认是继续输出原答案、输出近似拒答但 exact match 失败，还是输出其他幻觉答案。

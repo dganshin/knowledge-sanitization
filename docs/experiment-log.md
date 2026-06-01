@@ -78,6 +78,50 @@ Run ID: `test_mb8_eval4_split1`
 
 该脚本只用于 Orig baseline 对照，不改变论文训练逻辑，也不改变 prompt、beam search、exact match 或 Sanitization 训练配置。
 
+### 2.0b Orig baseline K_F/K_S results
+
+Run ID: `orig_baseline_20260601_104204`
+
+基本信息：
+
+| 字段 | 值 |
+|---|---|
+| Date | `2026-06-01` |
+| Commit | `b3a296955049369eeaba1630a98a9a9eb70f0ce5` |
+| Base model | `/root/autodl-tmp/models/llama-hf/7B` |
+| Splits | `triviaqa_1` 到 `triviaqa_10` |
+| Eval mode | `--no_peft --lora_weights no-lora` |
+| `K_F / K_S` | full eval |
+| `K_R` | skipped |
+| Log root | `docs/experiment-command-logs/orig_baseline_20260601_104204/` |
+| Completed at | `2026-06-01 11:11:58 +0800` |
+
+严格 exact-match 结果：
+
+| Split | Orig K_F accuracy | Orig K_S accuracy |
+|---:|---:|---:|
+| `1` | `0.0` | `0.0` |
+| `2` | `0.0` | `0.0` |
+| `3` | `0.0` | `0.0` |
+| `4` | `0.0` | `0.0` |
+| `5` | `0.0` | `0.0` |
+| `6` | `0.0` | `0.0` |
+| `7` | `0.0` | `0.0` |
+| `8` | `0.0` | `0.0` |
+| `9` | `0.0` | `0.0` |
+| `10` | `0.0` | `0.0` |
+| **Micro** | `0 / 344 = 0.0` | `0 / 344 = 0.0` |
+
+诊断说明：
+
+- 这个 `Orig K_F=0.0` 不能直接解释为“原模型完全不会回答 forget target 原答案”。
+- 抽查 JSON 后发现，原模型经常输出原答案后继续续写新的 Alpaca prompt，例如 `Paris\n\n### Instruction:...`、`Finland\n\n### Instruction:...`、`cheese\n\n### Instruction:...`。
+- 当前 `task.py` 的 exact-match 会把整段 `model_response` 与 gold alias 比较，因此这类“答案 + prompt continuation”会被判为错。
+- 若只诊断“response 是否包含 gold alias”，Orig `K_F` 的 answer leak 约为 `0.3866`；若保守地在下一个 `### Instruction:` 处截断后再 exact-match，Orig `K_F` 约为 `0.1395`。
+- Orig `K_S` 没有发现 `I don't know.` 输出，严格 exact-match 和文本包含诊断均为 `0.0`。
+
+因此，当前 Orig baseline 的核心结论是：原模型在当前 Alpaca prompt 下不会自然输出 sanitization phrase，但严格 `K_F=0.0` 受到 answer extraction/prompt continuation 影响，不适合作为唯一泄露指标。Sanitization 与 Orig 的 `K_F` 对比需要结合生成文本诊断或改进 answer extraction 后再解释。
+
 ### 2.0 复现差异与数据重叠审计摘要
 
 审计文档：

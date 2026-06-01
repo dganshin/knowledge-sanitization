@@ -115,6 +115,20 @@ split1-10 明细：
 
 当前观察到一个 split 的 full `K_R` 评测约需数小时。若 10 个 split 全量跑 Orig + LoRA，成本过高。
 
+### 5.3 Orig baseline 的 answer extraction 问题
+
+已完成 Orig baseline 的 `K_F/K_S` full eval，严格 exact-match 结果均为 `0.0`。但抽查生成文本发现，原模型经常先输出正确原答案，然后继续续写 `### Instruction:` prompt，例如 `Paris\n\n### Instruction:...`。当前评测会把整段 response 与 gold alias 做 exact-match，因此这类输出被判错。
+
+诊断统计：
+
+| Orig 诊断口径 | K_F | K_S |
+|---|---:|---:|
+| 当前严格 exact-match | 0.00% | 0.00% |
+| response 包含 gold alias | 38.66% | 0.00% |
+| 截断到下一个 `### Instruction:` 后 exact-match | 13.95% | 0.00% |
+
+结论：Orig 不会自然输出 `I don't know.`，但 Orig `K_F=0` 不能单独解释为原模型完全不会泄露答案；这里存在 prompt continuation / answer extraction 问题。
+
 ---
 
 ## 6. 当前差距的可能原因
@@ -179,5 +193,5 @@ split1-10 明细：
 3. `K_R sample` 接近论文，但 `K_F / K_S` 与论文仍有差距。
 4. 当前不能认为论文效果已复现。
 5. 最大工程瓶颈是 full `K_R` 评测成本过高。
-6. 下一步应优先做 Orig 小集合对照、prompt/LoRA target ablation 和生成文本分析。
+6. 下一步应优先做 answer extraction 诊断、prompt/LoRA target ablation 和生成文本分析。
 7. 调参阶段应使用 `K_R` 抽样评测，最终少数配置再跑 full `K_R`。

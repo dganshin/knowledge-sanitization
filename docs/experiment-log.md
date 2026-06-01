@@ -71,7 +71,7 @@ Run ID: `test_mb8_eval4_split1`
 
 - 评测原始 LLaMA-7B，不训练、不加载 LoRA adapter。
 - `K_F / K_S` 使用 full eval。
-- `K_R` 默认每个 split 固定随机抽样 500 条，`KR_SAMPLE_SEED=42`。
+- `K_R` 默认对齐当前 Sanitization 抽样口径：split1 抽样 2000 条，split2-10 各抽样 500 条，`KR_SAMPLE_SEED=42`。
 - 输出单独保存到 `out/orig/triviaqa_<split>/results`，不会覆盖 Sanitization 结果。
 - 命令日志保存到 `docs/experiment-command-logs/orig_baseline_<timestamp>/`。
 - 汇总写入本次 run 的 `summary.md`，并增量追加到 `docs/experiment-command-logs/orig_baseline_summary.md`。

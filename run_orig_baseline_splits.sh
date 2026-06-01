@@ -4,13 +4,16 @@ set -euo pipefail
 
 # Orig baseline: 原始 LLaMA-7B，不训练、不加载 LoRA，只做评测。
 # 可通过环境变量覆盖，例如：
-# SPLITS="1" KR_SAMPLE_SIZE=500 bash run_orig_baseline_splits.sh
+# SPLITS="1" bash run_orig_baseline_splits.sh
+# 如果设置 KR_SAMPLE_SIZE，则所有 split 使用同一个 K_R sample size。
 
 python_dir='.'
 base_model="${BASE_MODEL:-/root/autodl-tmp/models/llama-hf/7B}"
 splits="${SPLITS:-1 2 3 4 5 6 7 8 9 10}"
 eval_batch_size="${EVAL_BATCH_SIZE:-4}"
-kr_sample_size="${KR_SAMPLE_SIZE:-500}"
+kr_sample_size_override="${KR_SAMPLE_SIZE:-}"
+kr_sample_size_split1="${KR_SAMPLE_SIZE_SPLIT1:-2000}"
+kr_sample_size_other="${KR_SAMPLE_SIZE_OTHER:-500}"
 kr_sample_seed="${KR_SAMPLE_SEED:-42}"
 run_kr="${RUN_KR:-true}"
 
@@ -66,7 +69,9 @@ echo "base_model: ${base_model}" | tee -a "${log_root}/run_summary.log"
 echo "run_id: ${run_id}" | tee -a "${log_root}/run_summary.log"
 echo "splits: ${splits}" | tee -a "${log_root}/run_summary.log"
 echo "eval_batch_size: ${eval_batch_size}" | tee -a "${log_root}/run_summary.log"
-echo "kr_sample_size: ${kr_sample_size}" | tee -a "${log_root}/run_summary.log"
+echo "kr_sample_size_override: ${kr_sample_size_override:-none}" | tee -a "${log_root}/run_summary.log"
+echo "kr_sample_size_split1: ${kr_sample_size_split1}" | tee -a "${log_root}/run_summary.log"
+echo "kr_sample_size_other: ${kr_sample_size_other}" | tee -a "${log_root}/run_summary.log"
 echo "kr_sample_seed: ${kr_sample_seed}" | tee -a "${log_root}/run_summary.log"
 echo "run_kr: ${run_kr}" | tee -a "${log_root}/run_summary.log"
 echo "logs: ${log_root}" | tee -a "${log_root}/run_summary.log"
@@ -87,7 +92,9 @@ echo | tee -a "${log_root}/run_summary.log"
     echo "| run_id | \`${run_id}\` |"
     echo "| splits | \`${splits}\` |"
     echo "| eval_batch_size | \`${eval_batch_size}\` |"
-    echo "| kr_sample_size | \`${kr_sample_size}\` |"
+    echo "| kr_sample_size_override | \`${kr_sample_size_override:-none}\` |"
+    echo "| kr_sample_size_split1 | \`${kr_sample_size_split1}\` |"
+    echo "| kr_sample_size_other | \`${kr_sample_size_other}\` |"
     echo "| kr_sample_seed | \`${kr_sample_seed}\` |"
     echo "| run_kr | \`${run_kr}\` |"
     echo "| log_root | \`${log_root}\` |"
@@ -144,7 +151,15 @@ for num in ${splits}; do
     kr_accuracy="skipped"
     kr_size="0"
     if is_true "$run_kr"; then
-        run_and_log "split${num}_orig_eval_kr_sample${kr_sample_size}" \
+        if [ -n "$kr_sample_size_override" ]; then
+            kr_size="$kr_sample_size_override"
+        elif [ "$num" -eq 1 ]; then
+            kr_size="$kr_sample_size_split1"
+        else
+            kr_size="$kr_sample_size_other"
+        fi
+
+        run_and_log "split${num}_orig_eval_kr_sample${kr_size}" \
             python "${python_dir}/task.py" \
                 --base_model "${base_model}" \
                 --lora_weights no-lora \
@@ -156,12 +171,11 @@ for num in ${splits}; do
                 --num_beams=4 \
                 --max_new_tokens=256 \
                 --path_dataset "${test_retain_K_R}" \
-                --test_size "${kr_sample_size}" \
+                --test_size "${kr_size}" \
                 --sample_seed "${kr_sample_seed}"
 
         kr_accuracy_file="${out_dir}/trivia_qa/TASK-triviaqa_${num}_DATA-test-retrain_K-R_MODEL-no-lora_accuracy.txt"
         kr_accuracy="$(read_accuracy "$kr_accuracy_file")"
-        kr_size="${kr_sample_size}"
     fi
 
     kf_accuracy_file="${out_dir}/trivia_qa/TASK-triviaqa_${num}_DATA-test-forget_gold-answer_K-F_MODEL-no-lora_accuracy.txt"

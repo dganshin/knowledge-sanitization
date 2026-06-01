@@ -7,6 +7,7 @@
 - [`docs/experiment-log.md`](./experiment-log.md)
 - [`docs/repro-gap-audit.md`](./repro-gap-audit.md)
 - [`docs/data-overlap-audit.md`](./data-overlap-audit.md)
+- [`docs/rescore-analysis.md`](./rescore-analysis.md)
 
 ## 1. 当前已经完成的实验
 
@@ -129,6 +130,36 @@ Paris
 - Orig 会泄露一些原答案，但当前 strict exact-match 低估了泄露。
 - Sanitization 的 `K_F` 和 Orig strict `K_F` 不能直接做简单差值解释。
 
+### 2.4 Post-hoc re-score 后的判断
+
+已新增 `scripts/rescore_triviaqa_outputs.py`，只读取现有 JSON，不重新跑模型。它同时报告：
+
+- `current_strict`：当前 `task.py` 口径；
+- `first_line`：截断到第一行；
+- `before_next_instruction`：截断到下一个 `### Instruction:`；
+- `paper_like`：近似论文 TriviaQA 描述，优先按第一处换行截断，否则按最后一个终止标点截断；
+- `contains_alias`：只作为泄露诊断，判断 gold alias 是否出现在 response 任意位置。
+
+关键重算结果如下：
+
+| Setting | Dataset | Mode | Macro | Micro | Correct/Total |
+|---|---|---|---:|---:|---:|
+| Orig | `K_F` | `current_strict` | 0.00% | 0.00% | `0/344` |
+| Orig | `K_F` | `paper_like` | 13.99% | 13.95% | `48/344` |
+| Orig | `K_F` | `contains_alias` | 38.18% | 38.66% | `133/344` |
+| Orig | `K_S` | `paper_like` | 0.00% | 0.00% | `0/344` |
+| Sanitization | `K_F` | `current_strict` | 36.97% | 34.30% | `118/344` |
+| Sanitization | `K_F` | `paper_like` | 36.97% | 34.30% | `118/344` |
+| Sanitization | `K_F` | `contains_alias` | 37.96% | 35.47% | `122/344` |
+| Sanitization | `K_S` | `paper_like` | 50.97% | 54.07% | `186/344` |
+| Sanitization | `K_R sample` | `paper_like` | 47.51% | 47.00% | `3055/6500` |
+
+这个结果说明：
+
+- Orig strict `K_F=0` 确实是 answer extraction 失真；用 `paper_like` 后变成 `13.99%` macro，用 `contains_alias` 诊断则是 `38.18%` macro。
+- Sanitization 的 `K_F/K_S` 在 `paper_like` 下几乎没有变化，因为它的输出很短，平均约 10.3 个字符，没有 prompt continuation。
+- 因此当前 Sanitization 和论文主表之间的差距不能只用 answer extraction 解释。评测抽取问题主要影响 Orig baseline 的解释，不会把当前 Sanitization 结果“修正”到论文水平。
+
 ## 3. 当前不能直接下的结论
 
 ### 3.1 不能说论文已经复现
@@ -193,15 +224,25 @@ Paris
 
 ### 5.1 第一优先级：answer extraction 诊断
 
-当前 Orig baseline 已经显示 answer extraction 会影响 `K_F`。
+当前 Orig baseline 已经显示 answer extraction 会影响 `K_F`。第一版诊断脚本已经完成：
 
-建议新增一个**诊断脚本**，不改变主评测结果，只额外统计：
+```bash
+python scripts/rescore_triviaqa_outputs.py
+```
 
-- strict exact-match
-- trim at `### Instruction:` 后 exact-match
-- contains gold alias
-- contains `I don't know.`
-- 输出长度分布
+输出文件：
+
+- `docs/rescore-analysis.md`
+- `docs/rescore-analysis.json`
+
+这个脚本不改变主评测结果，只额外统计：
+
+- strict exact-match；
+- first-line extraction；
+- trim at `### Instruction:` 后 exact-match；
+- paper-like extraction；
+- contains gold alias；
+- 输出长度和 prompt continuation 统计。
 
 重点比较：
 
@@ -211,7 +252,7 @@ Paris
 | Sanitization K_F | 是否也是原答案 + prompt continuation |
 | Sanitization K_S | 是否输出近似拒答但 exact-match 不认 |
 
-这一步不需要重新跑模型，可以直接分析已有 JSON。
+这一步已经证明 Orig strict baseline 被低估，但 Sanitization 主结果不会因为 paper-like extraction 发生明显变化。
 
 ### 5.2 第二优先级：失败 split 生成文本诊断
 
@@ -292,4 +333,3 @@ Paris
 建议对外表述为：
 
 > 我们已经完成原仓库默认实现适配版的 LLaMA-7B 10 split Sanitization 实验。结果显示 retain 能力基本接近论文，但 forget/sanitization 指标尚未达到论文报告水平，并且 split 间波动明显。Orig baseline 显示原模型不会自然输出 `I don't know.`，但其 `K_F` strict exact-match 受到 prompt continuation 和 answer extraction 影响，不能直接解释为完全不泄露原答案。下一步应优先做 answer extraction 诊断和失败 split 输出分类，再考虑 QA prompt、LoRA target 和 epoch ablation。
-

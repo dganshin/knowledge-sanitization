@@ -334,3 +334,40 @@ Run ID: `orig_baseline_20260601_104204`
 - split6 仍然较弱，`K_F=0.625`、`K_S=0.3125`，说明 split/target 敏感性仍然明显。
 - 10 split macro `K_S=0.5097` 低于论文报告的约 `0.743`，但比前 5 split 的 `0.3709` 明显改善。
 - 10 split macro `K_R=0.4776` 仍接近论文 retain 水平，但当前为 sample 评测，不能等价于 full `K_R`。
+
+### 2.4 Post-hoc re-score: answer extraction diagnosis
+
+基本信息：
+
+| 字段 | 值 |
+|---|---|
+| Date | `2026-06-01` |
+| Script | `scripts/rescore_triviaqa_outputs.py` |
+| Output | `docs/rescore-analysis.md`, `docs/rescore-analysis.json` |
+| Model execution | none |
+
+说明：
+
+- 本次没有重新跑模型，只读取已保存的 Orig 和 Sanitization JSON。
+- 目的：检查当前 `task.py` strict exact-match 是否因为 prompt continuation 低估 `K_F`。
+- 主要 extraction modes：`current_strict`、`first_line`、`before_next_instruction`、`paper_like`、`contains_alias`。
+
+关键结果：
+
+| Setting | Dataset | Mode | Macro | Micro | Correct / Total |
+|---|---|---|---:|---:|---:|
+| Orig | `K_F` | `current_strict` | `0.00%` | `0.00%` | `0 / 344` |
+| Orig | `K_F` | `paper_like` | `13.99%` | `13.95%` | `48 / 344` |
+| Orig | `K_F` | `contains_alias` | `38.18%` | `38.66%` | `133 / 344` |
+| Orig | `K_S` | `paper_like` | `0.00%` | `0.00%` | `0 / 344` |
+| Sanitization | `K_F` | `current_strict` | `36.97%` | `34.30%` | `118 / 344` |
+| Sanitization | `K_F` | `paper_like` | `36.97%` | `34.30%` | `118 / 344` |
+| Sanitization | `K_S` | `paper_like` | `50.97%` | `54.07%` | `186 / 344` |
+| Sanitization | `K_R sample` | `paper_like` | `47.51%` | `47.00%` | `3055 / 6500` |
+
+分析：
+
+- Orig strict `K_F=0` 确实是 answer extraction 失真，不能解释为原模型完全不泄露答案。
+- Orig 的 `K_F paper_like=13.99%`，`contains_alias=38.18%`，说明原模型经常先输出答案再续写 prompt。
+- Sanitization 输出很短，没有 prompt continuation；`paper_like` 后 `K_F/K_S` 与当前 strict 口径一致。
+- 因此当前 Sanitization 与论文结果之间的差距不能主要归因于 answer extraction。
